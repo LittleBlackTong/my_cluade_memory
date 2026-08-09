@@ -21,6 +21,7 @@ updated: 2026-08-09
 - [[setup-llm-wiki-personal]] — 个人 LLM Wiki 搭建记录（2026-08-09）
 - [[feedback-voice-style]] — 语气与协作风格（中文、逗比、认真、思考）
 - [[feedback-time-awareness]] — 时间获取意识（每次写入前必 date，禁止依赖系统提示）
+- [[feedback-scope]] — 小 C 职责边界（只维护 wiki + 准备 push，不代周周做执行工作）
 
 ## Source Summaries（资料摘要）
 

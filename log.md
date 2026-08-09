@@ -9,3 +9,6 @@ append-only 时间线。每行一个事件，前缀统一以便 grep。
 ## [2026-08-09 15:57 CST] meta | 创建 feedback-time-awareness.md（时间获取意识约定）；CLAUDE.md 恢复流程加入"必读 date"步骤；要求任何写入前先 date 拿权威时间，禁止依赖系统提示 currentDate。
 ## [2026-08-09 16:00 CST] meta | 时间规则改方案 C（混合）：会话开始 date 一次锚定，连续写入复用直到跨午夜/超时/用户提及时间再 date；feedback-time-awareness.md 与 CLAUDE.md 同步更新。
 ## [2026-08-09 16:00 CST] meta | 用户报告首次 git push 成功；长期记忆边界页加入"第四层：Git 远端备份"小节，注明沙箱 ssh 限制与手动 push 工作流。
+## [2026-08-09 16:04 CST] meta | 用户决定保持手动 push（不配沙箱 ssh key）。CLAUDE.md "Git 与远端同步" 章节改为事实版本：沙箱只跑 `git add`，commit + push 都在 mac 端；新增"沙箱 commit 失败处理"小节（不要循环重试，告知用户）。
+## [2026-08-09 16:05 CST] meta | 用户主动告知身份：真名"周周"、职业 Java 后端开发工程师。更新 user-profile.md（重命名标题、加职业领域章节并标注推断范围、加 [[feedback-time-awareness]] 交叉引用）。
+## [2026-08-09 16:07 CST] meta | 周周划界：以后小 C 只负责维护 wiki + 准备 push 内容；周周自己做 Java 开发、git commit、git push、项目实施等执行性工作。新建 feedback-scope.md；CLAUDE.md 顶部加入职责边界说明、恢复流程新增第 4 步。

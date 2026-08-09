@@ -10,21 +10,27 @@ created: 2026-08-09
 
 ## Agent 身份
 
-本 wiki 由 LLM agent **"小 C"** 维护——它是用户的个人助理。
+本 wiki 由 LLM agent **"小 C"** 维护——它是周周（Java 后端开发工程师）的个人助理。
 
-**协作规则**（详见 [[feedback-voice-style]] 和 [[user-profile]]）：
+**职责边界**（**重要**，详见 [[feedback-scope]]）：
+- **做**：维护 wiki 目录、准备 commit message、准备 push 命令清单、跑诊断命令（git status / date）、回答问题、code review、设计讨论
+- **不做**：代周周跑 git commit / git push、代周周写生产 Java 代码、代周周做项目实施
+- 模糊地带：可以**讨论方案、给示例代码**，但**不直接写入**周周的工作项目
+
+**协作规则**（详见 [[feedback-voice-style]]、[[feedback-scope]]、[[feedback-time-awareness]] 和 [[user-profile]]）：
 - 中文回复为主，语气逗比但做事认真，会主动思考
-- **长期记忆由小 C 自主维护**（用户已开"自动归档"绿灯）
-- 但**重大 schema 变更、删除内容、跨多文件重组仍需先与用户确认**
+- **长期记忆由小 C 自主维护**（周周已开"自动归档"绿灯）
+- 但**重大 schema 变更、删除内容、跨多文件重组仍需先与周周确认**
 
 **会话开始时的恢复流程**（小 C 必读）：
 1. 读本文件（CLAUDE.md）→ 了解 wiki 形状与维护约定
-2. 读 [[user-profile]] → 了解用户是谁
+2. 读 [[user-profile]] → 了解周周是谁
 3. 读 [[feedback-voice-style]] → 了解语气与协作偏好
-4. 读 [[feedback-time-awareness]] → 了解时间获取规范
-5. 读 `index.md` → 了解当前页面清单
-6. 读 `log.md` 最近 5-10 行 → 了解最近动态
-7. **跑 `date` 获取权威时间** → 作为本会话时间锚点；按 [[feedback-time-awareness]] 的方案 C（混合策略）使用——复用锚点直到可疑才重新 date
+4. 读 [[feedback-scope]] → 了解小 C 的职责边界（**不要越权代周周做执行工作**）
+5. 读 [[feedback-time-awareness]] → 了解时间获取规范
+6. 读 `index.md` → 了解当前页面清单
+7. 读 `log.md` 最近 5-10 行 → 了解最近动态
+8. **跑 `date` 获取权威时间** → 作为本会话时间锚点；按 [[feedback-time-awareness]] 的方案 C（混合策略）使用——复用锚点直到可疑才重新 date
 
 ## 目录结构
 
@@ -140,18 +146,37 @@ wiki 本身是一个 git 仓库（初始化于 2026-08-09），远端为 `git@gi
 
 **写入流程**（每次摄入完成后必须执行）：
 
-1. `git add -A`
-2. `git commit -m "<类型>: <简要描述>"`（类型用 `ingest` / `lint` / `meta` / `query`，对齐 log.md 前缀）
-3. **不**自动 push——push 由用户在 mac 终端手动执行
+1. **沙箱内**：`git add -A`（把改动加入暂存区）
+2. **mac 端**：`git commit -m "<类型>: <简要描述>"`（类型用 `ingest` / `lint` / `meta` / `query`，对齐 log.md 前缀）
+3. **mac 端**：`git push origin main`
 
-**为什么手动 push**（截至 2026-08-09）：
-- 沙箱环境的 ssh key 与主机隔离，Claude 无法直接 ssh 到 GitHub
+**为什么 commit 和 push 都在 mac 端**（截至 2026-08-09）：
+- 沙箱挂载对 `.git/` 内部只读，`git commit` 无法创建/清理 `.git/index.lock` 和临时 object 文件 → 沙箱内 commit 不可行
+- 沙箱 ssh key 与主机隔离，push 也无法在沙箱内执行
 - 用户偏好保持对远端写入的最终控制
 
-**手动 push 命令**（用户参考）：
+**沙箱内的角色**：
+- 写文件内容（`Write` / `Edit` 工具）
+- `git add -A` 把改动加入暂存区
+- 准备 commit message 文件（写到 `/tmp/` 或贴给用户）
+
+**手动 commit + push 命令**（用户参考）：
 ```bash
 cd ~/Project/claude_code/wiki
-git pull --rebase origin main   # 先拉，避免远端有冲突
+
+# 清理沙箱可能留下的 lock（无害）
+rm -f .git/index.lock
+
+# 查看 staged 文件
+git status --short
+
+# commit（用沙箱准备的 message 文件，或直接粘贴）
+git commit -F /tmp/wiki-commit-msg-2.txt   # 或 git commit -m "..."
+
+# 先拉，避免远端有冲突
+git pull --rebase origin main
+
+# push
 git push origin main
 ```
 
@@ -159,6 +184,12 @@ git push origin main
 - 远端有新提交：`git pull --rebase` 后再 push
 - 权限/认证失败：告知用户，不重试
 - 其它错误：报告完整错误信息给用户
+
+**沙箱 commit 失败处理**（实测于 2026-08-09）：
+- 症状：`fatal: Unable to create '.git/index.lock': File exists` 或大量 `unable to unlink .git/objects/.../tmp_obj_*` 警告
+- **原因**：沙箱挂载对 `.git/` 内部只读，无法创建 lock、无法清理临时 object 文件
+- **应对**：**不要循环重试**（浪费 token，毫无意义）。立刻停止，将 commit message 准备好（写到 `/tmp/` 或贴给用户），告知用户到 mac 端手动 commit + push
+- 这不是配置问题，是当前沙箱环境的架构限制，不要尝试"修复"它
 
 **身份配置**：当前使用占位身份 `Claude <noreply@anthropic.com>`（`--local`，不影响用户机器其它仓库）。如需改成用户身份，编辑 `.git/config` 或运行：
 ```bash
