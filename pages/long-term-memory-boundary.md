@@ -52,7 +52,25 @@ LLM 不主动归档：
 
 归档前**默认先告知**用户，除非用户已开"自动归档"绿灯。
 
+## 第四层：Git 远端备份
+
+wiki 本身是 git 仓库（远端 `git@github.com:LittleBlackTong/my_cluade_memory.git`），提供：
+
+- **版本历史**：可回溯任意 wiki 演化
+- **跨设备访问**：不止沙箱里能读，用户的 mac / 任何 clone 的地方都能读
+- **远端持久化**：本地丢失不影响远端
+
+**与前三层的关系**：
+- git 是 wiki 的**传输/备份机制**，不是独立的记忆层
+- 它不携带语义，只携带文件字节流
+- 跨会话"记得"靠的是读 wiki 文件本身，不是 git 历史
+
+**沙箱限制**（截至 2026-08-09）：
+- 沙箱 ssh key 与主机隔离，无法直接 push 到 GitHub
+- 工作流：LLM 在沙箱内 commit，用户在 mac 终端手动 push（详见 [[CLAUDE-schema]] "Git 与远端同步"章节）
+
 ## 相关页面
 
 - [[llm-wiki-karpathy]]
 - [[setup-llm-wiki-personal]]
+- [[feedback-time-awareness]] — 时间获取规范
